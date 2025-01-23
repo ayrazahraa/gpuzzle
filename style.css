@@ -1,142 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap');
 
-// Utility to shuffle array
-const shuffleArray = (array) => {
-  const shuffledArray = [...array];
-  for (let i = shuffledArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
-  }
-  return shuffledArray;
-};
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
 
-// Sample images (replace with your own)
-const IMAGES = [
-  '/api/placeholder/200/200?text=Cat',
-  '/api/placeholder/200/200?text=Dog',
-  '/api/placeholder/200/200?text=Bird',
-  '/api/placeholder/200/200?text=Fish',
-  '/api/placeholder/200/200?text=Horse',
-  '/api/placeholder/200/200?text=Rabbit'
-];
+body {
+    background-image: linear-gradient(to bottom, #f8c200 0%, #f9d423 100%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
 
-const MemoryGame = () => {
-  const [level, setLevel] = useState(1);
-  const [cards, setCards] = useState([]);
-  const [selectedCards, setSelectedCards] = useState([]);
-  const [matchedCards, setMatchedCards] = useState([]);
-  const [points, setPoints] = useState(0);
+.main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-  // Initialize game based on level
-  const initializeGame = () => {
-    const gridSize = level + 2; // Increases grid size with level
-    const uniqueImages = IMAGES.slice(0, gridSize);
-    const duplicatedImages = [...uniqueImages, ...uniqueImages];
-    const shuffledCards = shuffleArray(duplicatedImages).map((image, index) => ({
-      id: index,
-      image,
-      isFlipped: false
-    }));
-    setCards(shuffledCards);
-    setSelectedCards([]);
-    setMatchedCards([]);
-  };
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    background-color: #ffff;
+    padding: 30px;
+    border-radius: 15px;
+    width: 700px;
+}
 
-  useEffect(() => {
-    initializeGame();
-  }, [level]);
+.container > h1 {
+    font-size: 50px;
+    color: #292929;
+}
 
-  const handleCardClick = (clickedCard) => {
-    // Prevent flipping already matched or currently selected cards
-    if (
-      matchedCards.includes(clickedCard.image) || 
-      selectedCards.length === 2 || 
-      selectedCards.some(card => card.id === clickedCard.id)
-    ) return;
+button {
+    font-size: 24px;
+    padding: 5px 25px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    background-color: #e2c045;
+    color: #ffff;
+    cursor: pointer;
+}
 
-    // Update card state
-    const updatedCards = cards.map(card => 
-      card.id === clickedCard.id ? { ...card, isFlipped: true } : card
-    );
-    setCards(updatedCards);
+button:hover {
+    background-color: #f9d423;
+}
 
-    // Add to selected cards
-    const newSelectedCards = [...selectedCards, clickedCard];
-    setSelectedCards(newSelectedCards);
+.puzzle-container {
+    margin-top: 20px;
+    display: flex;
+}
 
-    // Check for match
-    if (newSelectedCards.length === 2) {
-      if (newSelectedCards[0].image === newSelectedCards[1].image) {
-        setMatchedCards([...matchedCards, newSelectedCards[0].image]);
-        setPoints(points + 10);
+.puzzle-container img {
+    width: 122px;
+}
 
-        // Check if all cards are matched
-        if (matchedCards.length + 2 === cards.length / 2) {
-          setLevel(level + 1);
-        }
-      } else {
-        // Unflip cards after a delay if no match
-        setTimeout(() => {
-          const resetCards = cards.map(card => ({
-            ...card, 
-            isFlipped: matchedCards.includes(card.image)
-          }));
-          setCards(resetCards);
-        }, 1000);
-      }
-
-      // Reset selected cards
-      setSelectedCards([]);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-400 to-yellow-500 flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md p-4">
-        <CardContent>
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Memory Game</h1>
-            <div className="flex justify-between items-center">
-              <p className="text-xl">Level: {level}</p>
-              <p className="text-xl">Points: {points}</p>
-            </div>
-          </div>
-          
-          <div 
-            className="grid gap-2 mx-auto"
-            style={{
-              gridTemplateColumns: `repeat(${level + 2}, 1fr)`,
-              width: '100%',
-              maxWidth: '500px'
-            }}
-          >
-            {cards.map((card) => (
-              <div 
-                key={card.id} 
-                onClick={() => handleCardClick(card)}
-                className={`aspect-square border rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 ${
-                  card.isFlipped || matchedCards.includes(card.image) 
-                    ? 'bg-yellow-200' 
-                    : 'bg-yellow-50 hover:bg-yellow-100'
-                }`}
-              >
-                {(card.isFlipped || matchedCards.includes(card.image)) ? (
-                  <img 
-                    src={card.image} 
-                    alt="Memory card" 
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <span className="text-gray-400">?</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default MemoryGame;
+.puzzle {
+    display: grid;
+    width: 25em;
+    height: 25em;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 8em;
+}
